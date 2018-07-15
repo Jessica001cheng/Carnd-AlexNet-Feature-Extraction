@@ -3,21 +3,25 @@ import tensorflow as tf
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from alexnet import AlexNet
+from keras.datasets import cifar10
 
 # TODO: Load traffic signs data.
-training_file = "train.p"
-with open(training_file, mode='rb') as f:
-    train = pickle.load(f)
-X, y = train['features'], train['labels']
+(X_train, y_train), (X_test, y_test) = cifar10.load_data()
+# y_train.shape is 2d, (50000, 1). While Keras is smart enough to handle this
+# it's a good idea to flatten the array.
+y_train = y_train.reshape(-1)
+y_test = y_test.reshape(-1)
 
-# TODO: Split data into training and validation sets.
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.20)
+print("y_train size: ", y_train.size)
+print("y_test size: ", y_test.size)
+
+X_train, X_valid, y_train, y_valid = train_test_split(X_train, y_train, test_size=0.3, random_state=42, stratify = y_train)
 
 n_train = len(X_train)
 print("train number: ", n_train)
 
 # TODO: Define placeholders and resize operation.
-nb_classes = 43
+nb_classes = 10
 x = tf.placeholder(tf.float32, (None, 32, 32, 3))
 y = tf.placeholder(tf.int32, (None))
 resized = tf.image.resize_images(x, (227, 227))
@@ -79,6 +83,6 @@ with tf.Session() as sess:
         train_accur = evaluate(X_train, y_train)
         valid_accur = evaluate(X_valid, y_valid)
         print("Epochs {}...".format(j+1))
-        print("Train accuracy: {:.3f}".format(train_accur))
+        print("Train accuracy on Cifar10 : {:.3f}".format(train_accur))
         print("Validation accuracy: {:.3f}".format(valid_accur))
 
